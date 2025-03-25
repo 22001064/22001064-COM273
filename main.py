@@ -84,6 +84,38 @@ def pause_menu():
             button.draw(screen)
         pygame.display.update()
 
+def end_screen(message):
+    """Displays the end screen with game results and buttons."""
+    restart_button = Button("Restart", window_size[0]//2 - 100, 350, 200, 60, restart_game)
+    menu_button = Button("Main Menu", window_size[0]//2 - 100, 420, 200, 60, main_menu)
+    quit_button = Button("Quit", window_size[0]//2 - 100, 490, 200, 60, quit_game)  # Change this!
+
+    while True:
+        screen.fill(WHITE)
+        draw_text(message, font, BLACK, screen, window_size[0]//2, 250)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit_game()  # Ensures proper quitting
+
+            for button in [restart_button, menu_button, quit_button]:
+                button.handle_event(event)
+
+        mouse_pos = pygame.mouse.get_pos()
+        for button in [restart_button, menu_button, quit_button]:
+            button.check_hover(mouse_pos)
+            button.draw(screen)
+
+        pygame.display.update()
+
+def quit_game():
+    """Returns to the main menu."""
+    main_menu()
+
+def restart_game():
+    """Restarts the game by reinitializing the board."""
+    main()
+
 def set_paused(value):
     """Updates the paused state to resume the game."""
     global paused
@@ -135,7 +167,7 @@ def draw(display, board):
     pygame.display.update()
 
 def main():
-    """Main game loop with pause functionality."""
+    """Main game loop with pause functionality, and end game screen."""
     global paused
     paused = False  # Ensure the game starts unpaused
     board = initialize_game()
@@ -152,7 +184,7 @@ def main():
 
         game_result = check_game_status(board)
         if game_result:
-            main_menu()  # Return to menu instead of getting stuck
+            end_screen(game_result)  # Shows the end screen with the result
 
         draw(screen, board)
 
