@@ -1,10 +1,11 @@
 import pygame
 import sys
+import time
+import pyperclip
 from data.classes.Board import Board
 from engine import get_best_move
-import time
 
-# Initialize Pygame
+# Initialise Pygame
 pygame.init()
 window_size = (750, 700)
 screen = pygame.display.set_mode(window_size)
@@ -15,8 +16,9 @@ ai_icon = pygame.image.load("data/images/ai_icon.png")
 pvp_icon = pygame.image.load("data/images/pvp_icon.png")
 
 # Resize images to fit buttons
-ai_icon = pygame.transform.scale(ai_icon, (80, 80))
-pvp_icon = pygame.transform.scale(pvp_icon, (80, 80))
+ICON_SIZE = 40
+ai_icon = pygame.transform.scale(ai_icon, (ICON_SIZE, ICON_SIZE))
+pvp_icon = pygame.transform.scale(pvp_icon, (ICON_SIZE, ICON_SIZE))
 
 # Fonts and Colors
 font = pygame.font.Font(None, 50)
@@ -25,6 +27,11 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 BUTTON_COLOR = (50, 150, 255)
 BUTTON_HOVER = (30, 130, 230)
+
+current_game_mode = "pvp"
+current_preset = None
+current_fen = None
+
 
 class Button:
     """A simple button class for UI elements."""
@@ -56,41 +63,167 @@ def main_menu():
     """Displays the main menu with game mode selection."""
     
     # Define buttons
-    start_ai_button = Button("AI Mode", window_size[0]//2 - 150, 300, 300, 80, lambda: main(game_mode="ai"))
-    start_pvp_button = Button("2-Player Mode", window_size[0]//2 - 150, 400, 300, 80, lambda: main(game_mode="pvp"))
-    quit_button = Button("Quit", window_size[0]//2 - 100, 520, 200, 60, sys.exit)
+    start_ai_button = Button("AI Mode", window_size[0]//2 - 150, 260, 300, 60, lambda: main(game_mode="ai"))
+    preset_ai_button = Button("AI Preset", window_size[0]//2 - 150, 330, 300, 60, preset_menu_ai)
+    start_pvp_button = Button("2-Player Mode", window_size[0]//2 - 150, 400, 300, 60, lambda: main(game_mode="pvp"))
+    preset_pvp_button = Button("PVP Preset", window_size[0]//2 - 150, 470, 300, 60, preset_menu_pvp)
+    quit_button = Button("Quit", window_size[0]//2 - 100, 550, 200, 50, sys.exit)
+    board = Board(window_size[0], window_size[1])
 
     while True:
-        screen.fill(WHITE)
-        draw_text("Chess Game", font, BLACK, screen, window_size[0]//2, 150)
-
-        # Draw icons
-        screen.blit(ai_icon, (start_ai_button.rect.x + 10, start_ai_button.rect.y))  # AI Icon
-        screen.blit(pvp_icon, (start_pvp_button.rect.x + 10, start_pvp_button.rect.y))  # PVP Icon
+        board.draw(screen)
+        draw_text("Chess Game", font, WHITE, screen, window_size[0]//2, 150)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            for button in [start_ai_button, start_pvp_button, quit_button]:
+            for button in [start_ai_button, preset_ai_button, start_pvp_button, preset_pvp_button, quit_button]:
                 button.handle_event(event)
 
-        # Handle hover effects
+        # Handle hover effects and draw buttons
         mouse_pos = pygame.mouse.get_pos()
-        for button in [start_ai_button, start_pvp_button, quit_button]:
+        for button in [start_ai_button, preset_ai_button, start_pvp_button, preset_pvp_button, quit_button]:
+            button.check_hover(mouse_pos)
+            button.draw(screen)
+
+        def draw_icon(icon, button):
+            icon_x = button.rect.x + 10
+            icon_y = button.rect.y + (button.rect.height // 2) - (ICON_SIZE // 2)
+            screen.blit(icon, (icon_x, icon_y))
+
+        draw_icon(ai_icon, start_ai_button)  # AI Icon
+        draw_icon(ai_icon, preset_ai_button)  # AI Icon
+        draw_icon(pvp_icon, start_pvp_button)  # PVP Icon
+        draw_icon(pvp_icon, preset_pvp_button)  # PVP Icon
+
+        pygame.display.update()
+
+def preset_menu_ai():
+    """Preset menu for AI mode."""
+    start_button = Button("Start Game", window_size[0]//2 - 150, 250, 300, 60, lambda: main("ai", preset="start"))
+    mid_button = Button("Mid Game", window_size[0]//2 - 150, 330, 300, 60, lambda: main("ai", preset="mid"))
+    end_button = Button("End Game", window_size[0]//2 - 150, 410, 300, 60, lambda: main("ai", preset="end"))
+    fen_button = Button("Custom FEN", window_size[0]//2 - 150, 490, 300, 60, fen_input_screen)
+    back_button = Button("Back", window_size[0]//2 - 100, 560, 200, 60, main_menu)
+    board = Board(window_size[0], window_size[1])
+
+    while True:
+        board.draw(screen)
+        draw_text("AI Preset Menu", font, WHITE, screen, window_size[0]//2, 150)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            for button in [start_button, mid_button, end_button, fen_button, back_button]:
+                button.handle_event(event)
+
+        mouse_pos = pygame.mouse.get_pos()
+        for button in [start_button, mid_button, end_button, fen_button, back_button]:
             button.check_hover(mouse_pos)
             button.draw(screen)
 
         pygame.display.update()
 
-def pause_menu():
+def preset_menu_pvp():
+    """Preset menu for Player vs Player mode."""
+    start_button = Button("Start Game", window_size[0]//2 - 150, 250, 300, 60, lambda: main("pvp", preset="start"))
+    mid_button = Button("Mid Game", window_size[0]//2 - 150, 330, 300, 60, lambda: main("pvp", preset="mid"))
+    end_button = Button("End Game", window_size[0]//2 - 150, 410, 300, 60, lambda: main("pvp", preset="end"))
+    back_button = Button("Back", window_size[0]//2 - 100, 490, 200, 60, main_menu)
+    board = Board(window_size[0], window_size[1])
+
+    while True:
+        board.draw(screen)
+
+        draw_text("PVP Preset Menu", font, WHITE, screen, window_size[0]//2, 150)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            for button in [start_button, mid_button, end_button, back_button]:
+                button.handle_event(event)
+
+        mouse_pos = pygame.mouse.get_pos()
+        for button in [start_button, mid_button, end_button, back_button]:
+            button.check_hover(mouse_pos)
+            button.draw(screen)
+
+        pygame.display.update()
+
+def fen_input_screen():
+    """Allows the user to input a custom FEN string with live preview."""
+    input_box = pygame.Rect(window_size[0]//2 - 250, 300, 500, 50)
+    user_text = ''
+    error_message = ''
+    active = True
+
+    def is_valid_fen(fen):
+        parts = fen.strip().split()
+        return len(parts) == 6 and all(parts)
+
+    preview_board = Board(window_size[0] // 2, window_size[1] // 2)
+    valid_preview = False
+
+    while active:
+        screen.fill(WHITE)
+        draw_text("Enter Custom FEN:", font, BLACK, screen, window_size[0]//2, 40)
+        pygame.draw.rect(screen, BLACK, input_box, 2)
+
+        font_input = pygame.font.Font(None, 28)
+        text_surface = font_input.render(user_text, True, BLACK)
+        screen.blit(text_surface, (input_box.x + 10, input_box.y + 10))
+        input_box.w = max(500, text_surface.get_width() + 20)
+
+        # Try to render the FEN as a preview
+        try:
+            preview_board.set_fen(user_text)
+            valid_preview = True
+        except Exception as e:
+            valid_preview = False
+
+        if valid_preview:
+            preview_board.draw(screen)
+        elif user_text.strip():
+            draw_text("Invalid FEN preview", small_font, (200, 0, 0), screen, window_size[0]//2, 120)
+
+        if error_message:
+            draw_text(error_message, small_font, (200, 0, 0), screen, window_size[0]//2, 370)
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    if is_valid_fen(user_text):
+                        main(game_mode='ai', fen=user_text)
+                        active = False
+                    else:
+                        error_message = "Invalid FEN. Please enter a full valid FEN string."
+                elif event.key == pygame.K_BACKSPACE:
+                    user_text = user_text[:-1]
+                elif event.key == pygame.K_ESCAPE:
+                    preset_menu_ai()
+                    return
+                else:
+                    user_text += event.unicode
+
+        pygame.display.update()
+
+def pause_menu(board_surface=None):
     """Pause menu that appears when ESC is pressed."""
     global paused
     paused = True  # Set paused state
     resume_button = Button("Resume", window_size[0]//2 - 100, 300, 200, 60, lambda: set_paused(False))
     quit_button = Button("Quit to Menu", window_size[0]//2 - 100, 400, 200, 60, main_menu)
     while paused:  # Stay in pause menu until unpaused
-        screen.fill(WHITE)
+        if board_surface:
+            screen.blit(board_surface, (0, 0))  # Show the frozen board
+        else:
+            screen.fill(WHITE)
         draw_text("Paused", font, BLACK, screen, window_size[0]//2, 200)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -106,15 +239,26 @@ def pause_menu():
             button.draw(screen)
         pygame.display.update()
 
-def end_screen(message):
+def end_screen(message, time_str, final_board_surface=None):
     """Displays the end screen with game results and buttons."""
     restart_button = Button("Restart", window_size[0]//2 - 100, 350, 200, 60, restart_game)
     menu_button = Button("Main Menu", window_size[0]//2 - 100, 420, 200, 60, main_menu)
-    quit_button = Button("Quit", window_size[0]//2 - 100, 490, 200, 60, quit_game)  # Change this!
+    quit_button = Button("Quit", window_size[0]//2 - 100, 490, 200, 60, quit_game)
+    
+    # Create a transparent grey overlay
+    overlay = pygame.Surface(window_size)
+    overlay.set_alpha(100)  # Transparency (0 = fully transparent, 255 = opaque)
+    overlay.fill((50, 50, 50))  # Grey color
 
     while True:
-        screen.fill(WHITE)
-        draw_text(message, font, BLACK, screen, window_size[0]//2, 250)
+        if final_board_surface:
+            screen.blit(final_board_surface, (0, 0))
+            screen.blit(overlay, (0, 0))  # Apply grey overlay
+        else:
+            screen.fill(WHITE)
+
+        draw_text(message, font, WHITE, screen, window_size[0]//2, 250)
+        draw_text(time_str, small_font, WHITE, screen, window_size[0]//2, 300)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -135,8 +279,8 @@ def quit_game():
     sys.exit()
 
 def restart_game():
-    """Restarts the game by reinitializing the board."""
-    main()
+    """Restarts the game by reinitialising the board."""
+    main(current_game_mode, current_preset, current_fen)
 
 def set_paused(value):
     """Updates the paused state to resume the game."""
@@ -149,9 +293,9 @@ def draw_text(text, font, color, surface, x, y):
     text_rect = text_obj.get_rect(center=(x, y))
     surface.blit(text_obj, text_rect)
 
-def initialize_game():
-    """Initializes the game board."""
-    board = Board(window_size[0], window_size[1])
+def initialise_game(config=None):
+    """Initialises the game board."""
+    board = Board(window_size[0], window_size[1], config)
     return board
 
 def handle_events(board):
@@ -162,8 +306,9 @@ def handle_events(board):
             main_menu()  # If the user closes the game, go to the main menu
             return False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                pause_menu()  # Open the pause menu if ESC is pressed
+            if event.key == pygame.K_ESCAPE: # Open the pause menu if ESC is pressed
+                board_surface = screen.copy()
+                pause_menu(board_surface)  # Pass current board snapshot
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mx, my = pygame.mouse.get_pos()
             board.handle_click(mx, my)
@@ -175,8 +320,10 @@ def check_game_status(board):
         return "White Wins!"
     elif board.is_in_checkmate('white'):
         return "Black Wins!"
+    elif not board.is_in_check('black') and board.is_trapped('black') or not board.is_in_check('white') and board.is_trapped('white'):
+        return "Draw! (Stalemate)"
     elif only_kings_left(board):
-        return "Draw! Only kings left."
+        return "Draw! Only Kings Left."
     return None  # Game still ongoing
 
 def only_kings_left(board):
@@ -190,11 +337,50 @@ def draw(display, board):
     board.draw(display)
     pygame.display.update()
 
-def main(game_mode="pvp"):
+def main(game_mode="pvp", preset=None, fen=None):
     """Main game loop with AI or Player mode selection."""
     global paused
+    global current_game_mode, current_preset, current_fen
+    current_game_mode = game_mode
+    current_preset = preset
+    current_fen = fen
     paused = False  # Ensure the game starts unpaused
-    board = initialize_game()
+    start_time = time.time()
+    board = initialise_game()
+    # inside main()
+    if fen:
+        board = initialise_game()
+        board.set_fen(fen)
+    elif preset == "mid":
+        config = [
+            ["", "", "", "", "bK", "", "", ""],
+            ["", "bP", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "wP", "", ""],
+            ["", "", "", "wQ", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "wK", "", "", ""],
+        ]
+        board = initialise_game(config=config)
+    elif preset == "end":
+        config = [
+            ["bR", "", "", "", "bK", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "", "", "", ""],
+            ["", "", "", "", "wK", "", "", "wR"],
+        ]
+        board = initialise_game(config=config)
+    else:
+        board = initialise_game()
+
+    fen_string = board.get_fen()
+    pyperclip.copy(fen_string)
+    print(f"FEN copied to clipboard: {fen_string}")
     running = True
 
     # Print selected game mode for debugging
@@ -211,7 +397,11 @@ def main(game_mode="pvp"):
 
         game_result = check_game_status(board)
         if game_result:
-            end_screen(game_result)  # Shows the end screen with the result
+            elapsed_time = time.time() - start_time
+            minutes, seconds = divmod(int(elapsed_time), 60)
+            time_str = f"Game Duration: {minutes}m {seconds}s"
+            final_board_surface = screen.copy()
+            end_screen(game_result, time_str, final_board_surface)  # Show end screen with game result
 
         draw(screen, board)
 

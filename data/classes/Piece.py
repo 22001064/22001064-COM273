@@ -1,10 +1,12 @@
 import pygame
 
 class Piece:
-    def __init__(self, pos, color, board):
+    def __init__(self, pos, color, board, is_ai=False):
         self.pos = pos
         self.x, self.y = pos
         self.color = color
+        self.board = board
+        self.is_ai = is_ai  # Flag to check if it's AI's piece
         self.has_moved = False
 
     def get_moves(self, board):
@@ -39,8 +41,8 @@ class Piece:
 
     def handle_special_moves(self, board, prev_square, square):
         # Pawn Promotion
-        if self.notation == ' ' and (self.y == 0 or self.y == 7):  # Pawn reaches last rank
-            promotion_piece = self.choose_promotion(board)
+        if self.notation == 'P' and (self.y == 0 or self.y == 7):  # Pawn reaches last rank
+            promotion_piece = self.choose_promotion(board)  # Automatically promote if AI
             square.occupying_piece = promotion_piece  # Replace pawn with chosen piece
         # Castling
         if self.notation == 'K':
@@ -52,6 +54,17 @@ class Piece:
                 rook.move(board, board.get_square_from_pos((5, self.y)), force=True)
 
     def choose_promotion(self, board):
+        """ AI decides on the promotion piece. """
+        from data.classes.pieces.Queen import Queen
+        if self.color == 'white' and self.y == 7:  # For white, show the promotion screen
+            return self.choose_promotion_ui(board)
+        if self.color == 'black' and self.y == 0:  # For black, automatically promote to Queen
+            if self.is_ai == True: # AI chooses Queen
+                return Queen((self.x, self.y), self.color, board)
+            elif self.is_ai == False: # Player chooses piece
+                return self.choose_promotion_ui(board)
+
+    def choose_promotion_ui(self, board):
         """ Opens a popup allowing the player to select a promotion piece. """
         import pygame
         from data.classes.pieces.Queen import Queen
@@ -76,6 +89,7 @@ class Piece:
         x_center = screen.get_width() // 2
         y_start = screen.get_height() // 2 - 100
 
+
         pieces = [("Queen", Queen), ("Rook", Rook), ("Bishop", Bishop), ("Knight", Knight)]
         buttons = []
         
@@ -87,6 +101,7 @@ class Piece:
 
         while selected_piece is None:
             screen.fill(WHITE)
+            text = font.render("If it's not your piece press ESC", True, BLACK)
             text = font.render("Choose a piece:", True, BLACK)
             screen.blit(text, (x_center - text.get_width() // 2, y_start - 60))
 
