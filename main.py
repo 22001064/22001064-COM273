@@ -1,12 +1,22 @@
 import pygame
 import sys
 from data.classes.Board import Board
+from engine import get_best_move
+import time
 
 # Initialize Pygame
 pygame.init()
 window_size = (750, 700)
 screen = pygame.display.set_mode(window_size)
 pygame.display.set_caption("Chess Game")
+
+# Load Images for AI and Player vs Player mode
+ai_icon = pygame.image.load("data/images/ai_icon.png")
+pvp_icon = pygame.image.load("data/images/pvp_icon.png")
+
+# Resize images to fit buttons
+ai_icon = pygame.transform.scale(ai_icon, (80, 80))
+pvp_icon = pygame.transform.scale(pvp_icon, (80, 80))
 
 # Fonts and Colors
 font = pygame.font.Font(None, 50)
@@ -43,22 +53,34 @@ class Button:
             self.callback()
 
 def main_menu():
-    """Displays the main menu."""
-    start_button = Button("Start Game", window_size[0]//2 - 100, 300, 200, 60, main)
-    quit_button = Button("Quit", window_size[0]//2 - 100, 400, 200, 60, sys.exit)
+    """Displays the main menu with game mode selection."""
+    
+    # Define buttons
+    start_ai_button = Button("AI Mode", window_size[0]//2 - 150, 300, 300, 80, lambda: main(game_mode="ai"))
+    start_pvp_button = Button("2-Player Mode", window_size[0]//2 - 150, 400, 300, 80, lambda: main(game_mode="pvp"))
+    quit_button = Button("Quit", window_size[0]//2 - 100, 520, 200, 60, sys.exit)
+
     while True:
         screen.fill(WHITE)
-        draw_text("Chess Game", font, BLACK, screen, window_size[0]//2, 200)
+        draw_text("Chess Game", font, BLACK, screen, window_size[0]//2, 150)
+
+        # Draw icons
+        screen.blit(ai_icon, (start_ai_button.rect.x + 10, start_ai_button.rect.y))  # AI Icon
+        screen.blit(pvp_icon, (start_pvp_button.rect.x + 10, start_pvp_button.rect.y))  # PVP Icon
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            for button in [start_button, quit_button]:
+            for button in [start_ai_button, start_pvp_button, quit_button]:
                 button.handle_event(event)
+
+        # Handle hover effects
         mouse_pos = pygame.mouse.get_pos()
-        for button in [start_button, quit_button]:
+        for button in [start_ai_button, start_pvp_button, quit_button]:
             button.check_hover(mouse_pos)
             button.draw(screen)
+
         pygame.display.update()
 
 def pause_menu():
@@ -110,7 +132,7 @@ def end_screen(message):
 
 def quit_game():
     """Returns to the main menu."""
-    main_menu()
+    sys.exit()
 
 def restart_game():
     """Restarts the game by reinitializing the board."""
@@ -134,13 +156,15 @@ def initialize_game():
 
 def handle_events(board):
     """Handles user input, including ESC for pausing."""
+    global paused
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             main_menu()  # If the user closes the game, go to the main menu
             return False
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            pause_menu()  # Open the pause menu
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pause_menu()  # Open the pause menu if ESC is pressed
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mx, my = pygame.mouse.get_pos()
             board.handle_click(mx, my)
     return True
@@ -166,12 +190,15 @@ def draw(display, board):
     board.draw(display)
     pygame.display.update()
 
-def main():
-    """Main game loop with pause functionality, and end game screen."""
+def main(game_mode="pvp"):
+    """Main game loop with AI or Player mode selection."""
     global paused
     paused = False  # Ensure the game starts unpaused
     board = initialize_game()
     running = True
+
+    # Print selected game mode for debugging
+    print(f"Game Mode: {game_mode}")
 
     while running:
         running = handle_events(board)
@@ -187,6 +214,23 @@ def main():
             end_screen(game_result)  # Shows the end screen with the result
 
         draw(screen, board)
+
+        # If AI Mode, add AI move logic
+        if game_mode == "ai" and board.turn == "black":  
+            time.sleep(0.5)
+            best_move = get_best_move(board)
+            if best_move:
+                try:
+                    start_pos = (ord(best_move[0]) - ord('a'), 8 - int(best_move[1]))
+                    end_pos = (ord(best_move[2]) - ord('a'), 8 - int(best_move[3]))
+                    print(f"AI moving from {start_pos} to {end_pos}")
+                    success = board.move_piece(start_pos, end_pos)
+                    if success:
+                        board.turn = 'white'  # Switch turn to player after AI move
+                    else:
+                        print("AI move failed")
+                except Exception as e:
+                    print(f"AI Move Error: {e}")  # Debugging message
 
 if __name__ == '__main__':
     main_menu()  # Start the game with the main menu

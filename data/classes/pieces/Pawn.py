@@ -8,7 +8,7 @@ class Pawn(Piece):
         img_path = 'data/images/' + color[0] + '_pawn.png'
         self.img = pygame.image.load(img_path)
         self.img = pygame.transform.scale(self.img, (board.tile_width - 35, board.tile_height - 35))
-        self.notation = ' '
+        self.notation = 'P'
 
     def get_possible_moves(self, board):
         output = []

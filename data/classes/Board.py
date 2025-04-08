@@ -89,3 +89,55 @@ class Board:
                 square.highlight = True
         for square in self.squares:
             square.draw(display)
+
+    def get_fen(self):
+        """Generates an updated FEN string based on the current board state."""
+        board_state = [["" for _ in range(8)] for _ in range(8)]
+
+        # Populate board_state from self.squares
+        for square in self.squares:
+            piece = square.occupying_piece
+            if piece:
+                symbol = piece.notation.upper() if piece.color == "white" else piece.notation.lower()
+                board_state[square.y][square.x] = symbol
+
+        # Convert board_state into FEN format
+        fen_rows = []
+        for row in board_state:
+            empty_count = 0
+            fen_row = ""
+            for cell in row:
+                if cell == "":
+                    empty_count += 1
+                else:
+                    if empty_count > 0:
+                        fen_row += str(empty_count)
+                        empty_count = 0
+                    fen_row += cell
+            if empty_count > 0:
+                fen_row += str(empty_count)
+            fen_rows.append(fen_row)
+
+        piece_placement = "/".join(fen_rows)
+        active_color = "w" if self.turn == "white" else "b"
+        castling_rights = "KQkq"  # Placeholder (implement castling logic)
+        en_passant = "-"  # Placeholder (implement en passant tracking)
+        halfmove_clock = "0"  # Placeholder (implement halfmove tracking)
+        fullmove_number = "1"  # Placeholder (implement fullmove tracking)
+
+        return f"{piece_placement} {active_color} {castling_rights} {en_passant} {halfmove_clock} {fullmove_number}"
+
+
+    def move_piece(self, start_pos, end_pos):
+        """Moves a piece on the board and updates FEN."""
+        start_square = self.get_square_from_pos(start_pos)
+        end_square = self.get_square_from_pos(end_pos)
+
+        if start_square.occupying_piece:
+            moved = start_square.occupying_piece.move(self, end_square)
+            if moved:
+                # Update the board state and FEN after a valid move
+                new_fen = self.get_fen()
+                print(f"Updated FEN: {new_fen}")  # Debugging output
+                return new_fen
+        return None
