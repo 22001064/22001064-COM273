@@ -224,7 +224,7 @@ def pause_menu(board_surface=None):
             screen.blit(board_surface, (0, 0))  # Show the frozen board
         else:
             screen.fill(WHITE)
-        draw_text("Paused", font, BLACK, screen, window_size[0]//2, 200)
+        draw_text("Paused", font, WHITE, screen, window_size[0]//2, 200)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -239,7 +239,7 @@ def pause_menu(board_surface=None):
             button.draw(screen)
         pygame.display.update()
 
-def end_screen(message, time_str, final_board_surface=None):
+def end_screen(message, time_str, final_board_surface=None, last_move=None):
     """Displays the end screen with game results and buttons."""
     restart_button = Button("Restart", window_size[0]//2 - 100, 350, 200, 60, restart_game)
     menu_button = Button("Main Menu", window_size[0]//2 - 100, 420, 200, 60, main_menu)
@@ -253,7 +253,17 @@ def end_screen(message, time_str, final_board_surface=None):
     while True:
         if final_board_surface:
             screen.blit(final_board_surface, (0, 0))
-            screen.blit(overlay, (0, 0))  # Apply grey overlay
+            screen.blit(overlay, (0, 0))
+
+            if last_move and ("Wins" in message):  # Only highlights the piece that won the game if someone won
+                start, end = last_move
+                tile_width = window_size[0] // 8
+                tile_height = window_size[1] // 8
+                highlight_color = (255, 215, 0)
+
+                for pos in [start, end]:
+                    rect = pygame.Rect(pos[0] * tile_width, pos[1] * tile_height, tile_width, tile_height)
+                    pygame.draw.rect(screen, highlight_color, rect, 5)  # 5px outline
         else:
             screen.fill(WHITE)
 
@@ -347,6 +357,7 @@ def main(game_mode="pvp", preset=None, fen=None):
     paused = False  # Ensure the game starts unpaused
     start_time = time.time()
     board = initialise_game()
+    last_move = None  # Track the last move for AI
     # inside main()
     if fen:
         board = initialise_game()
@@ -397,11 +408,13 @@ def main(game_mode="pvp", preset=None, fen=None):
 
         game_result = check_game_status(board)
         if game_result:
+            draw(screen, board)
+            pygame.display.update()
+            final_board_surface = screen.copy()
             elapsed_time = time.time() - start_time
             minutes, seconds = divmod(int(elapsed_time), 60)
             time_str = f"Game Duration: {minutes}m {seconds}s"
-            final_board_surface = screen.copy()
-            end_screen(game_result, time_str, final_board_surface)  # Show end screen with game result
+            end_screen(game_result, time_str, final_board_surface, last_move)  # Show end screen with game result
 
         draw(screen, board)
 
@@ -417,6 +430,7 @@ def main(game_mode="pvp", preset=None, fen=None):
                     success = board.move_piece(start_pos, end_pos)
                     if success:
                         board.turn = 'white'  # Switch turn to player after AI move
+                        last_move = (start_pos, end_pos)
                     else:
                         print("AI move failed")
                 except Exception as e:

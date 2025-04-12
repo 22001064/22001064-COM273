@@ -20,7 +20,7 @@ stockfish.update_engine_parameters({
     "Threads": 2,
     "Hash": 256,
     "UCI_LimitStrength": True,
-    "UCI_Elo": 1500,
+    "UCI_Elo": 1000,
 })
 stockfish.set_depth(10)
 

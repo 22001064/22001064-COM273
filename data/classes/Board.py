@@ -1,3 +1,4 @@
+import pygame
 from data.classes.Square import Square
 from data.classes.pieces.Rook import Rook
 from data.classes.pieces.Bishop import Bishop
@@ -103,12 +104,23 @@ class Board:
         return True  # No valid moves for the player, they are trapped
 
     def draw(self, display):
+        # Draw squares and highlight moves
         if self.selected_piece:
             self.get_square_from_pos(self.selected_piece.pos).highlight = True
             for square in self.selected_piece.get_valid_moves(self):
                 square.highlight = True
+
         for square in self.squares:
             square.draw(display)
+
+        # Draw red outline around king in check (but not checkmate)
+        for square in self.squares:
+            piece = square.occupying_piece
+            if piece and piece.notation == 'K':
+                color = piece.color
+                if self.is_in_check(color) and not self.is_in_checkmate(color):
+                    pygame.draw.rect(display, (255, 0, 0), square.rect, 4)  # Red outline for check
+
 
     def get_fen(self):
         """Generates an updated FEN string based on the current board state."""
