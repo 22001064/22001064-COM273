@@ -101,9 +101,12 @@ class Piece:
 
         while selected_piece is None:
             screen.fill(WHITE)
-            text = font.render("If it's not your piece press ESC", True, BLACK)
-            text = font.render("Choose a piece:", True, BLACK)
-            screen.blit(text, (x_center - text.get_width() // 2, y_start - 60))
+
+            message_text = font.render("If it's not your piece press ESC", True, BLACK)
+            prompt_text = font.render("Choose a piece:", True, BLACK)
+
+            screen.blit(message_text, (x_center - message_text.get_width() // 2, y_start - 90))
+            screen.blit(prompt_text, (x_center - prompt_text.get_width() // 2, y_start - 60))
 
             mouse_pos = pygame.mouse.get_pos()
 

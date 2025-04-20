@@ -92,10 +92,9 @@ class Pawn(Piece):
     def choose_promotion(self, board):
         """ Opens a popup allowing the player to select a promotion piece. """
         from data.classes.pieces.Queen import Queen
-        from main import current_game_mode
 
         # Auto-promote if it's black's turn in AI mode
-        if self.colour == 'black' and current_game_mode == 'ai':
+        if self.y == 0 and getattr(board, 'game_mode', 'pvp') == 'ai':
             return Queen((self.x, self.y), self.colour, board)
 
         # Otherwise show the promotion menu
