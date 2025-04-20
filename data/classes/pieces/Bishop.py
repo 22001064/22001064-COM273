@@ -2,9 +2,9 @@ import pygame
 from data.classes.Piece import Piece
 
 class Bishop(Piece):
-    def __init__(self, pos, color, board):
-        super().__init__(pos, color, board)
-        img_path = 'data/images/' + color[0] + '_bishop.png'
+    def __init__(self, pos, colour, board):
+        super().__init__(pos, colour, board)
+        img_path = 'data/images/' + colour[0] + '_bishop.png'
         self.img = pygame.image.load(img_path)
         self.img = pygame.transform.scale(self.img, (board.tile_width - 20, board.tile_height - 20))
         self.notation = 'B'

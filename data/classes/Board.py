@@ -62,14 +62,14 @@ class Board:
         x, y = mx // self.tile_width, my // self.tile_height
         clicked_square = self.get_square_from_pos((x, y))
         if self.selected_piece is None:
-            if clicked_square.occupying_piece and clicked_square.occupying_piece.color == self.turn:
+            if clicked_square.occupying_piece and clicked_square.occupying_piece.colour == self.turn:
                 self.selected_piece = clicked_square.occupying_piece
         elif self.selected_piece.move(self, clicked_square):
             self.turn = 'white' if self.turn == 'black' else 'black'
-        elif clicked_square.occupying_piece and clicked_square.occupying_piece.color == self.turn:
+        elif clicked_square.occupying_piece and clicked_square.occupying_piece.colour == self.turn:
             self.selected_piece = clicked_square.occupying_piece
 
-    def is_in_check(self, color, board_change=None):
+    def is_in_check(self, colour, board_change=None):
         king_pos, changing_piece, old_square, new_square, new_square_old_piece = None, None, None, None, None
         if board_change:
             old_square, new_square = self.get_square_from_pos(board_change[0]), self.get_square_from_pos(board_change[1])
@@ -80,21 +80,21 @@ class Board:
         if changing_piece and changing_piece.notation == 'K':
             king_pos = new_square.pos
         if not king_pos:
-            king_pos = next(piece.pos for piece in pieces if piece.notation == 'K' and piece.color == color)
+            king_pos = next(piece.pos for piece in pieces if piece.notation == 'K' and piece.colour == colour)
 
-        in_check = any(king_pos == square.pos for piece in pieces if piece.color != color for square in piece.attacking_squares(self))
+        in_check = any(king_pos == square.pos for piece in pieces if piece.colour != colour for square in piece.attacking_squares(self))
 
         if board_change:
             old_square.occupying_piece, new_square.occupying_piece = changing_piece, new_square_old_piece
         return in_check
 
-    def is_in_checkmate(self, color):
-        king = next(piece for piece in (square.occupying_piece for square in self.squares) if piece and piece.notation == 'K' and piece.color == color)
-        return not king.get_valid_moves(self) and self.is_in_check(color)
+    def is_in_checkmate(self, colour):
+        king = next(piece for piece in (square.occupying_piece for square in self.squares) if piece and piece.notation == 'K' and piece.colour == colour)
+        return not king.get_valid_moves(self) and self.is_in_check(colour)
 
-    def is_trapped(self, color):
+    def is_trapped(self, colour):
         """Check if the current player is trapped and can't move any piece."""
-        pieces = [square.occupying_piece for square in self.squares if square.occupying_piece and square.occupying_piece.color == color]
+        pieces = [square.occupying_piece for square in self.squares if square.occupying_piece and square.occupying_piece.colour == colour]
         
         # Check if any piece has valid moves
         for piece in pieces:
@@ -117,8 +117,8 @@ class Board:
         for square in self.squares:
             piece = square.occupying_piece
             if piece and piece.notation == 'K':
-                color = piece.color
-                if self.is_in_check(color) and not self.is_in_checkmate(color):
+                colour = piece.colour
+                if self.is_in_check(colour) and not self.is_in_checkmate(colour):
                     pygame.draw.rect(display, (255, 0, 0), square.rect, 4)  # Red outline for check
 
 
@@ -130,7 +130,7 @@ class Board:
         for square in self.squares:
             piece = square.occupying_piece
             if piece:
-                symbol = piece.notation.upper() if piece.color == "white" else piece.notation.lower()
+                symbol = piece.notation.upper() if piece.colour == "white" else piece.notation.lower()
                 board_state[square.y][square.x] = symbol
 
         # Convert board_state into FEN format
@@ -151,12 +151,12 @@ class Board:
             fen_rows.append(fen_row)
 
         piece_placement = "/".join(fen_rows)
-        active_color = "w" if self.turn == "white" else "b"
+        active_colour = "w" if self.turn == "white" else "b"
         castling = self.get_castling_rights()
         ep = self.en_passant_square
         half = self.halfmove_clock
         full = self.fullmove_number
-        fen = f"{piece_placement} {active_color} {castling} {ep} {half} {full}"
+        fen = f"{piece_placement} {active_colour} {castling} {ep} {half} {full}"
         
         # Debugging output
         print(f"Generated FEN: {fen}")
@@ -201,17 +201,17 @@ class Board:
         if moved:
             # Update castling flags
             if moving_piece.notation == 'K':  # King moves
-                if moving_piece.color == 'white':
+                if moving_piece.colour == 'white':
                     self.white_king_moved = True
                 else:
                     self.black_king_moved = True
             elif moving_piece.notation == 'R':  # Rook moves
-                if moving_piece.color == 'white':
+                if moving_piece.colour == 'white':
                     if start_pos == (0, 7):  # a1
                         self.white_rook_a_moved = True
                     elif start_pos == (7, 7):  # h1
                         self.white_rook_h_moved = True
-                elif moving_piece.color == 'black':
+                elif moving_piece.colour == 'black':
                     if start_pos == (0, 0):  # a8
                         self.black_rook_a_moved = True
                     elif start_pos == (7, 0):  # h8

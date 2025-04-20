@@ -1,10 +1,10 @@
 import pygame
 
 class Piece:
-    def __init__(self, pos, color, board, is_ai=False):
+    def __init__(self, pos, colour, board, is_ai=False):
         self.pos = pos
         self.x, self.y = pos
-        self.color = color
+        self.colour = colour
         self.board = board
         self.is_ai = is_ai  # Flag to check if it's AI's piece
         self.has_moved = False
@@ -14,7 +14,7 @@ class Piece:
         for direction in self.get_possible_moves(board):
             for square in direction:
                 if square.occupying_piece:
-                    if square.occupying_piece.color == self.color:
+                    if square.occupying_piece.colour == self.colour:
                         break
                     output.append(square)
                     break
@@ -22,7 +22,7 @@ class Piece:
         return output
 
     def get_valid_moves(self, board):
-        return [square for square in self.get_moves(board) if not board.is_in_check(self.color, board_change=[self.pos, square.pos])]
+        return [square for square in self.get_moves(board) if not board.is_in_check(self.colour, board_change=[self.pos, square.pos])]
 
     def move(self, board, square, force=False):
         for sq in board.squares:
@@ -56,11 +56,11 @@ class Piece:
     def choose_promotion(self, board):
         """ AI decides on the promotion piece. """
         from data.classes.pieces.Queen import Queen
-        if self.color == 'white' and self.y == 7:  # For white, show the promotion screen
+        if self.colour == 'white' and self.y == 7:  # For white, show the promotion screen
             return self.choose_promotion_ui(board)
-        if self.color == 'black' and self.y == 0:  # For black, automatically promote to Queen
+        if self.colour == 'black' and self.y == 0:  # For black, automatically promote to Queen
             if self.is_ai == True: # AI chooses Queen
-                return Queen((self.x, self.y), self.color, board)
+                return Queen((self.x, self.y), self.colour, board)
             elif self.is_ai == False: # Player chooses piece
                 return self.choose_promotion_ui(board)
 
@@ -80,7 +80,7 @@ class Piece:
 
         WHITE = (255, 255, 255)
         BLACK = (0, 0, 0)
-        BUTTON_COLOR = (50, 150, 255)
+        BUTTON_colour = (50, 150, 255)
         BUTTON_HOVER = (30, 130, 230)
 
         # Define button positions
@@ -108,8 +108,8 @@ class Piece:
             mouse_pos = pygame.mouse.get_pos()
 
             for name, piece_class, rect in buttons:
-                color = BUTTON_HOVER if rect.collidepoint(mouse_pos) else BUTTON_COLOR
-                pygame.draw.rect(screen, color, rect, border_radius=10)
+                colour = BUTTON_HOVER if rect.collidepoint(mouse_pos) else BUTTON_colour
+                pygame.draw.rect(screen, colour, rect, border_radius=10)
                 text_surf = font.render(name, True, WHITE)
                 text_rect = text_surf.get_rect(center=rect.center)
                 screen.blit(text_surf, text_rect)
@@ -123,12 +123,12 @@ class Piece:
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     for name, piece_class, rect in buttons:
                         if rect.collidepoint(event.pos):
-                            selected_piece = piece_class((self.x, self.y), self.color, board)
+                            selected_piece = piece_class((self.x, self.y), self.colour, board)
                             break
 
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        return Queen((self.x, self.y), self.color, board)  
+                        return Queen((self.x, self.y), self.colour, board)  
 
         return selected_piece
 

@@ -20,12 +20,12 @@ ICON_SIZE = 40
 ai_icon = pygame.transform.scale(ai_icon, (ICON_SIZE, ICON_SIZE))
 pvp_icon = pygame.transform.scale(pvp_icon, (ICON_SIZE, ICON_SIZE))
 
-# Fonts and Colors
+# Fonts and Colours
 font = pygame.font.Font(None, 50)
 small_font = pygame.font.Font(None, 30)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-BUTTON_COLOR = (50, 150, 255)
+BUTTON_COLOUR = (50, 150, 255)
 BUTTON_HOVER = (30, 130, 230)
 
 current_game_mode = "pvp"
@@ -38,14 +38,14 @@ class Button:
     def __init__(self, text, x, y, width, height, callback):
         self.text = text
         self.rect = pygame.Rect(x, y, width, height)
-        self.color = BUTTON_COLOR
+        self.colour = BUTTON_COLOUR
         self.callback = callback
         self.hovered = False
 
     def draw(self, screen):
         """Draws the button."""
-        color = BUTTON_HOVER if self.hovered else self.color
-        pygame.draw.rect(screen, color, self.rect, border_radius=10)
+        colour = BUTTON_HOVER if self.hovered else self.colour
+        pygame.draw.rect(screen, colour, self.rect, border_radius=10)
         text_surf = small_font.render(self.text, True, WHITE)
         text_rect = text_surf.get_rect(center=self.rect.center)
         screen.blit(text_surf, text_rect)
@@ -248,7 +248,7 @@ def end_screen(message, time_str, final_board_surface=None, last_move=None):
     # Create a transparent grey overlay
     overlay = pygame.Surface(window_size)
     overlay.set_alpha(100)  # Transparency (0 = fully transparent, 255 = opaque)
-    overlay.fill((50, 50, 50))  # Grey color
+    overlay.fill((50, 50, 50))  # Grey colour
 
     while True:
         if final_board_surface:
@@ -259,11 +259,11 @@ def end_screen(message, time_str, final_board_surface=None, last_move=None):
                 start, end = last_move
                 tile_width = window_size[0] // 8
                 tile_height = window_size[1] // 8
-                highlight_color = (255, 215, 0)
+                highlight_colour = (255, 215, 0)
 
                 for pos in [start, end]:
                     rect = pygame.Rect(pos[0] * tile_width, pos[1] * tile_height, tile_width, tile_height)
-                    pygame.draw.rect(screen, highlight_color, rect, 5)  # 5px outline
+                    pygame.draw.rect(screen, highlight_colour, rect, 5)  # 5px outline
         else:
             screen.fill(WHITE)
 
@@ -297,9 +297,9 @@ def set_paused(value):
     global paused
     paused = value
 
-def draw_text(text, font, color, surface, x, y):
+def draw_text(text, font, colour, surface, x, y):
     """Helper function to render text."""
-    text_obj = font.render(text, True, color)
+    text_obj = font.render(text, True, colour)
     text_rect = text_obj.get_rect(center=(x, y))
     surface.blit(text_obj, text_rect)
 

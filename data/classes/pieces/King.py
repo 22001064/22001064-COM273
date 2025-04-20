@@ -2,9 +2,9 @@ import pygame
 from data.classes.Piece import Piece
 
 class King(Piece):
-    def __init__(self, pos, color, board):
-        super().__init__(pos, color, board)
-        img_path = 'data/images/' + color[0] + '_king.png'
+    def __init__(self, pos, colour, board):
+        super().__init__(pos, colour, board)
+        img_path = 'data/images/' + colour[0] + '_king.png'
         self.img = pygame.image.load(img_path)
         self.img = pygame.transform.scale(self.img, (board.tile_width - 20, board.tile_height - 20))
         self.notation = 'K'
@@ -38,7 +38,7 @@ class King(Piece):
 
     def can_castle(self, board):
         if not self.has_moved:
-            if self.color == 'white':
+            if self.colour == 'white':
                 queenside_rook = board.get_piece_from_pos((0, 7))
                 kingside_rook = board.get_piece_from_pos((7, 7))
                 if queenside_rook != None:
@@ -53,7 +53,7 @@ class King(Piece):
                             board.get_piece_from_pos((i, 7)) for i in range(5, 7)
                         ] == [None, None]:
                             return 'kingside'
-            elif self.color == 'black':
+            elif self.colour == 'black':
                 queenside_rook = board.get_piece_from_pos((0, 0))
                 kingside_rook = board.get_piece_from_pos((7, 0))
                 if queenside_rook != None:
@@ -72,7 +72,7 @@ class King(Piece):
     def get_valid_moves(self, board):
         output = []
         for square in self.get_moves(board):
-            if not board.is_in_check(self.color, board_change=[self.pos, square.pos]):
+            if not board.is_in_check(self.colour, board_change=[self.pos, square.pos]):
                 output.append(square)
         if self.can_castle(board) == 'queenside':
             output.append(
