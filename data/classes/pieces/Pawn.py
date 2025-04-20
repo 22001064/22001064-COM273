@@ -95,7 +95,7 @@ class Pawn(Piece):
         from main import current_game_mode
 
         # Auto-promote if it's black's turn in AI mode
-        if self.color == 'black' and current_game_mode == 'ai':
+        if self.colour == 'black' and current_game_mode == 'ai':
             return Queen((self.x, self.y), self.colour, board)
 
         # Otherwise show the promotion menu
