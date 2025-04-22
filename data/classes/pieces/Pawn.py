@@ -8,9 +8,9 @@ from data.classes.pieces.Knight import Knight
 class Pawn(Piece):
     def __init__(self, pos, colour, board):
         super().__init__(pos, colour, board)
-        img_path = 'data/images/' + colour[0] + '_pawn.png'
-        self.img = pygame.image.load(img_path)
-        self.img = pygame.transform.scale(self.img, (board.tile_width - 35, board.tile_height - 35))
+        img_path = 'data/images/' + colour[0] + '_pawn.webp'
+        self.img = pygame.image.load(img_path).convert_alpha()
+        self.img = pygame.transform.smoothscale(self.img, (board.tile_width - 35, board.tile_height - 35))
         self.notation = 'P'
         self.has_moved = False  # Track whether the pawn has moved
 
