@@ -2,7 +2,7 @@
 
 This Chess Game was part of my UMP/Dissertation Project, to find out 'How does modifying the search depth of a Chess AI engines affect their ability to balance short-term tactical moves versus long-term positional strategy?'
 
-##Features
+## Features
 
 - Stockfish Ai
 - Player vs Player Capability
